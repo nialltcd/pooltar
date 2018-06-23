@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+
+
+<script type="text/javascript">
+   var getJSON = function(url, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = 'json';
+    xhr.onload = function() {
+      var status = xhr.status;
+      if (status === 200) {
+        callback(null, xhr.response);
+      } else {
+        callback(status, xhr.response);
+      }
+    };
+    xhr.send();
+};
+
+
+getJSON('https://raw.githubusercontent.com/lsv/fifa-worldcup-2018/master/data.json',
+  function(err, data) {
+    if (err !== null) {
+      alert('Something went wrong: ' + err);
+    } 
+    else {
+    	// Load all teams
+        var team_dict = {};
+		var player_list = 
+        [
+            {
+            	'player': 'Peter',
+            	'teams': ['Australia', 'Iran','Uruguay','Belgium'],
+                'points': 0,
+                'played': 0,
+                'scored': 0,
+                'conceded' : 0,
+			},
+            {
+            	'player': 'David',
+            	'teams': ['South Korea', 'Egypt', 'Columbia', 'Spain'],
+                'points': 0,
+                'played': 0,
+                'scored': 0,
+                'conceded' : 0,
+			},
+            {
+            	'player': 'Niall',
+            	'teams': ['Japan','Serbia','Mexico','Spain'],
+                'points': 0,
+                'played': 0,
+                'scored': 0,
+                'conceded' : 0,
+			},
+            {
+            	'player': 'Paraic',
+            	'teams': ['Saudi Arabia', 'Tunisia', 'England', 'Poland'],
+                'points': 0,
+                'played': 0,
+                'scored': 0,
+                'conceded' : 0,
+			},
+            {
+            	'player': 'Eoin',
+            	'teams': ['Nigeria', 'Iceland', 'Croatia', 'Brazil'],
+                'points': 0,
+                'played': 0,
+                'scored': 0,
+                'conceded' : 0,
+			},
+            {
+            	'player': 'Mark',
+            	'teams': ['Morocco','Sweden','Peru','Germany'],
+                'points': 0,
+                'played': 0,
+                'scored': 0,
+                'conceded' : 0,
+			},
+            {
+            	'player': 'Kevin',
+            	'teams': ['Panama','Costa Rica','Switzerland','Argentina'],
+                'points': 0,
+                'played': 0,
+                'scored': 0,
+                'conceded' : 0,
+			},
+            {
+            	'player': 'Anto',
+            	'teams': ['Russia','Senegal','Denmark','Portugal'],
+                'points': 0,
+                'played': 0,
+                'scored': 0,
+                'conceded' : 0,
+			}
+        ];
+
+
+    	for (var key in data["teams"]) {
+        	var team = data["teams"][key];
+            team_dict[team['id']] =
+            	{ 
+                	'name': team['name'],
+                    'id': team['id'],
+                    'points': 0,
+                    'scored': 0,
+                    'conceded': 0,
+                    'played': 0
+				}            	
+    	}   
+		
+
+        // Load all group stage games
+    	for (var key in data["groups"]) {
+        	var group = data["groups"][key];
+            for (var match in group["matches"])
+            {
+				var match = group["matches"][match];
+                if (match["finished"] == true)
+                {
+					team_dict[match['home_team']].played += 1
+					team_dict[match['away_team']].played += 1 
+                    team_dict[match['home_team']].scored += match['home_result']
+					team_dict[match['away_team']].scored += match['away_result']
+                    team_dict[match['home_team']].conceded += match['away_result']
+					team_dict[match['away_team']].conceded += match['home_result']
+                	if(match['home_result'] == match['away_result'])
+                    {
+                    	team_dict[match['home_team']].points += 1 
+                    	team_dict[match['away_team']].points += 1 
+                    }
+					else if(match['home_result'] < match['away_result'])
+                    {
+                    	team_dict[match['away_team']].points += 3 
+                    }
+					else if(match['home_result'] > match['away_result'])
+                    {
+                    	team_dict[match['home_team']].points += 3 
+                    }
+
+				}
+            }
+        	
+    	}
+        
+        for (var key in team_dict) {
+       	 	var team = team_dict[key];
+            for (var player_key in player_list)
+            {
+            	var player = player_list[player_key];
+                if (player.teams.indexOf(team.name) >= 0) {
+				    player.points += team.points
+                    player.scored += team.scored
+                    player.conceded += team.conceded
+                    player.played += team.played
+				}
+			}
+        }
+            
+        var table = "<table border=\"1\"><tr><th>Player</th><th>Played</th><th>Scored</th><th>Conceded</th><th>Points</th></tr>";
+        
+        player_list.sort(function (a, b) {
+  			return b.points - a.points || b.scored - a.scored || b.conceded - a.conceded;
+		});
+         
+    	for (var key in player_list) {
+       	 	var t = player_list[key];
+            table += "<tr><td>"
+            table += t.player
+            table += "</td><td>"
+            table += t.played
+            table += "</td><td>"
+            table += t.scored
+            table += "</td><td>"
+            table += t.conceded
+            table += "</td><td>"
+            table += t.points
+            table += "</td></tr>"	
+    	}
+        table += "</table>";
+        document.body.innerHTML = table
+    }
+});
+
+</script>
+
+</body>
+</html>
